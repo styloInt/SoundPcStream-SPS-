@@ -32,13 +32,14 @@
             this.stopRecord = new System.Windows.Forms.Button();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.sourceList = new System.Windows.Forms.ListView();
+            this.errorPortL = new System.Windows.Forms.Label();
             this.portLabel = new System.Windows.Forms.Label();
             this.portTB = new System.Windows.Forms.TextBox();
             this.startServeur = new System.Windows.Forms.Button();
             this.ipAdressTB = new System.Windows.Forms.TextBox();
             this.ipAdress = new System.Windows.Forms.Label();
             this.refresh = new System.Windows.Forms.Button();
-            this.errorPortL = new System.Windows.Forms.Label();
+            this.stopServeur = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -47,7 +48,7 @@
             // 
             // record
             // 
-            this.record.Location = new System.Drawing.Point(16, 142);
+            this.record.Location = new System.Drawing.Point(16, 176);
             this.record.Name = "record";
             this.record.Size = new System.Drawing.Size(145, 23);
             this.record.TabIndex = 0;
@@ -57,9 +58,9 @@
             // 
             // stopRecord
             // 
-            this.stopRecord.Location = new System.Drawing.Point(16, 184);
+            this.stopRecord.Location = new System.Drawing.Point(16, 224);
             this.stopRecord.Name = "stopRecord";
-            this.stopRecord.Size = new System.Drawing.Size(145, 23);
+            this.stopRecord.Size = new System.Drawing.Size(145, 25);
             this.stopRecord.TabIndex = 1;
             this.stopRecord.Text = "Stop Recording";
             this.stopRecord.UseVisualStyleBackColor = true;
@@ -77,6 +78,7 @@
             // 
             // splitContainer1.Panel2
             // 
+            this.splitContainer1.Panel2.Controls.Add(this.stopServeur);
             this.splitContainer1.Panel2.Controls.Add(this.errorPortL);
             this.splitContainer1.Panel2.Controls.Add(this.portLabel);
             this.splitContainer1.Panel2.Controls.Add(this.portTB);
@@ -101,10 +103,19 @@
             this.sourceList.UseCompatibleStateImageBehavior = false;
             this.sourceList.View = System.Windows.Forms.View.List;
             // 
+            // errorPortL
+            // 
+            this.errorPortL.AutoSize = true;
+            this.errorPortL.Location = new System.Drawing.Point(130, 101);
+            this.errorPortL.Name = "errorPortL";
+            this.errorPortL.Size = new System.Drawing.Size(107, 13);
+            this.errorPortL.TabIndex = 8;
+            this.errorPortL.Text = "Nméro de port érroné";
+            // 
             // portLabel
             // 
             this.portLabel.AutoSize = true;
-            this.portLabel.Location = new System.Drawing.Point(248, 25);
+            this.portLabel.Location = new System.Drawing.Point(13, 64);
             this.portLabel.Name = "portLabel";
             this.portLabel.Size = new System.Drawing.Size(26, 13);
             this.portLabel.TabIndex = 7;
@@ -112,16 +123,16 @@
             // 
             // portTB
             // 
-            this.portTB.Location = new System.Drawing.Point(303, 22);
+            this.portTB.Location = new System.Drawing.Point(84, 64);
             this.portTB.Name = "portTB";
             this.portTB.Size = new System.Drawing.Size(62, 20);
             this.portTB.TabIndex = 6;
             // 
             // startServeur
             // 
-            this.startServeur.Location = new System.Drawing.Point(2, 51);
+            this.startServeur.Location = new System.Drawing.Point(216, 28);
             this.startServeur.Name = "startServeur";
-            this.startServeur.Size = new System.Drawing.Size(401, 23);
+            this.startServeur.Size = new System.Drawing.Size(118, 23);
             this.startServeur.TabIndex = 5;
             this.startServeur.Text = "Start Server";
             this.startServeur.UseVisualStyleBackColor = true;
@@ -145,7 +156,7 @@
             // 
             // refresh
             // 
-            this.refresh.Location = new System.Drawing.Point(16, 96);
+            this.refresh.Location = new System.Drawing.Point(16, 137);
             this.refresh.Name = "refresh";
             this.refresh.Size = new System.Drawing.Size(145, 23);
             this.refresh.TabIndex = 2;
@@ -153,14 +164,15 @@
             this.refresh.UseVisualStyleBackColor = true;
             this.refresh.Click += new System.EventHandler(this.refresh_Click);
             // 
-            // errorPortL
+            // stopServeur
             // 
-            this.errorPortL.AutoSize = true;
-            this.errorPortL.Location = new System.Drawing.Point(129, 77);
-            this.errorPortL.Name = "errorPortL";
-            this.errorPortL.Size = new System.Drawing.Size(107, 13);
-            this.errorPortL.TabIndex = 8;
-            this.errorPortL.Text = "Nméro de port érroné";
+            this.stopServeur.Location = new System.Drawing.Point(216, 60);
+            this.stopServeur.Name = "stopServeur";
+            this.stopServeur.Size = new System.Drawing.Size(118, 23);
+            this.stopServeur.TabIndex = 9;
+            this.stopServeur.Text = "Stop Serveur";
+            this.stopServeur.UseVisualStyleBackColor = true;
+            this.stopServeur.Click += new System.EventHandler(this.stopServeur_Click);
             // 
             // MainWindow
             // 
@@ -193,6 +205,7 @@
         private System.Windows.Forms.Label portLabel;
         private System.Windows.Forms.TextBox portTB;
         private System.Windows.Forms.Label errorPortL;
+        private System.Windows.Forms.Button stopServeur;
     }
 }
 

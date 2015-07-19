@@ -11,11 +11,13 @@ using System.Windows.Forms;
 using NAudio;
 using NAudio.Wave;
 using SoundPcStream_SPS_.Connection;
+using System.Threading;
 
 namespace SoundPcStream_SPS_
 {
     public partial class MainWindow : Form
     {
+        Thread myServeurThread;
 
         private WaveIn recorder;
         private BufferedWaveProvider bufferedWaveProvider;
@@ -25,20 +27,6 @@ namespace SoundPcStream_SPS_
         private WaveFileWriter writer;
 
         Serveur serv;
-
-        private void startServeur_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                errorPortL.Hide();
-                serv.StartListening(Convert.ToInt32(portTB.Text));
-            }
-            catch(ArgumentException)
-            {
-                errorPortL.Show();
-            }
-            
-        }
 
         public MainWindow()
         {
@@ -55,6 +43,43 @@ namespace SoundPcStream_SPS_
             portTB.Text = serv.getPortValide() + "";
             errorPortL.Hide();
         }
+
+
+        private void startServeur_Click(object sender, EventArgs e)
+        {
+            startServeur.Enabled = false;
+            string data = null;
+            myServeurThread = new Thread(new ThreadStart(() =>
+            {
+                try
+                {
+                    this.Invoke((MethodInvoker)delegate() { errorPortL.Hide(); });
+                    serv.StartListening(Convert.ToInt32(portTB.Text));
+                    data = serv.recieve();
+                }
+                catch (ArgumentException)
+                {
+                    this.Invoke((MethodInvoker)delegate() { errorPortL.Show(); });
+                }
+            }));
+            
+            try
+            {
+                myServeurThread.Start();
+                myServeurThread.Join();
+            }
+            catch (ThreadAbortException) { }
+            //if(data != null)
+            startServeur.Enabled = true;
+
+        }
+
+        private void stopServeur_Click(object sender, EventArgs e)
+        {
+            if (myServeurThread != null)
+                myServeurThread.Abort();//fonctionne pas
+        }
+
 
         private void refresh_Click(object sender, EventArgs e)
         {
