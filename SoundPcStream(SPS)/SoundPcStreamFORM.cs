@@ -19,7 +19,7 @@ namespace SoundPcStream_SPS_
     {
         Thread myServeurThread;
 
-        private WaveIn recorder;
+        private WaveInEvent recorder;
         private BufferedWaveProvider bufferedWaveProvider;
         private LoopBack savingWaveProvider;
         private WaveOut player;
@@ -56,28 +56,36 @@ namespace SoundPcStream_SPS_
                     this.Invoke((MethodInvoker)delegate() { errorPortL.Hide(); });
                     serv.StartListening(Convert.ToInt32(portTB.Text));
                     data = serv.recieve();
+                    sendSourceList();
+                    int deviceNumber = Convert.ToInt32(serv.recieve());
+                    sendSong(deviceNumber);
+
                 }
                 catch (ArgumentException)
                 {
-                    this.Invoke((MethodInvoker)delegate() { errorPortL.Show(); });
+                    //TODO : Gérer mieux ce genre d'érreurs
+                    this.Invoke((MethodInvoker)delegate() { errorPortL.Show(); });//si erreur de port
                 }
             }));
             
             try
             {
                 myServeurThread.Start();
-                myServeurThread.Join();
+                //myServeurThread.Join();
             }
             catch (ThreadAbortException) { }
             //if(data != null)
-            startServeur.Enabled = true;
 
         }
 
         private void stopServeur_Click(object sender, EventArgs e)
         {
             if (myServeurThread != null)
-                myServeurThread.Abort();//fonctionne pas
+            {
+                myServeurThread.Abort();//fonctionne pas car startListner bloquant
+                serv = new Serveur();
+            }
+            startServeur.Enabled = true;
         }
 
 
@@ -98,19 +106,35 @@ namespace SoundPcStream_SPS_
             }
         }
 
-        private void record_Click(object sender, EventArgs e)
+        private void sendSong(int deviceNumber)
         {
-            int deviceNumber = sourceList.SelectedItems[0].Index;
-            if (sourceList.SelectedItems.Count == 0) return;
+            //if (sourceList.SelectedItems.Count == 0) return;
             // set up the recorder
-            recorder = new WaveIn();
-            recorder.DataAvailable += RecorderOnDataAvailable;
+            recorder = new WaveInEvent();
+            recorder.DataAvailable += SendDataAvaible;
             recorder.DeviceNumber = deviceNumber;
             recorder.WaveFormat = new WaveFormat(44100, NAudio.Wave.WaveIn.GetCapabilities(deviceNumber).Channels);
 
             // set up our signal chain
             bufferedWaveProvider = new BufferedWaveProvider(recorder.WaveFormat);
-            writer = new WaveFileWriter("temp.wav", bufferedWaveProvider.WaveFormat);
+
+            recorder.StartRecording();
+        }
+
+        private void record_Click(object sender, EventArgs e)
+        {
+            int deviceNumber = sourceList.SelectedItems[0].Index;
+            if (sourceList.SelectedItems.Count == 0) return;
+            // set up the recorder
+            recorder = new WaveInEvent();
+            //recorder.DataAvailable += RecorderOnDataAvailable;
+            recorder.DataAvailable += SendDataAvaible;
+            recorder.DeviceNumber = deviceNumber;
+            recorder.WaveFormat = new WaveFormat(44100, NAudio.Wave.WaveIn.GetCapabilities(deviceNumber).Channels);
+
+            // set up our signal chain
+            bufferedWaveProvider = new BufferedWaveProvider(recorder.WaveFormat);
+            //writer = new WaveFileWriter("temp.wav", bufferedWaveProvider.WaveFormat);
             //savingWaveProvider = new LoopBack(bufferedWaveProvider, "temp.wav");
 
             recorder.StartRecording();
@@ -126,6 +150,36 @@ namespace SoundPcStream_SPS_
                 Dispose(); // auto-dispose in case users forget
         }
 
+        private void SendDataAvaible(object sender, WaveInEventArgs waveInEventArgs)
+        {
+            byte[] buffer = new byte[10000];
+            if (waveInEventArgs.BytesRecorded > 0 && !isWriterDisposed && !serv.isClose())
+                serv.send(waveInEventArgs.Buffer, waveInEventArgs.BytesRecorded);
+            if (serv.isClose())
+            {
+                Dispose();
+                startServeur_Click(null, null);
+            }
+        }
+
+        private void sendSourceList()
+        {
+            sourceList.Invoke((MethodInvoker)delegate
+            {
+                foreach (ListViewItem source in sourceList.Items)
+                {
+                    if (serv == null)
+                        return;
+                    byte[] dataToSend = Encoding.UTF8.GetBytes(source.Text + "\n");
+                    serv.send(dataToSend, dataToSend.Length);
+                }
+            });
+
+            
+            byte[] fin = Encoding.ASCII.GetBytes("<EOF>");
+            serv.send(fin, fin.Length);
+        }
+
         private void stopRecord_Click(object sender, EventArgs e)
         {
             // stop recording
@@ -137,7 +191,12 @@ namespace SoundPcStream_SPS_
             if (!isWriterDisposed)
             {
                 isWriterDisposed = true;
-                writer.Dispose();
+                //writer.Dispose();
+                this.Invoke((MethodInvoker)delegate()
+                {
+                    record.Dispose();
+                });
+                
             }
         }
 

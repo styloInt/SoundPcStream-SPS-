@@ -34,7 +34,7 @@ namespace SoundPcStream_SPS_.Connection
             ipGlobalProperties = IPGlobalProperties.GetIPGlobalProperties();
             tcpConnInfoListe = ipGlobalProperties.GetActiveTcpConnections().ToList();
 
-            foreach (IPAddress adress in tabIpAdress)
+            foreach (IPAddress adress in tabIpAdress)//TODO: résoudre pb virtual box
                 if (adress.AddressFamily == AddressFamily.InterNetwork)
                     ipAddress = adress;
         }
@@ -79,21 +79,37 @@ namespace SoundPcStream_SPS_.Connection
         {
             string data = null;
             byte[] bytes = new Byte[1024];
+            int indexOfEOF = 0;
             // An incoming connection needs to be processed.
             while (true)
             {
                 bytes = new byte[1024];
-                int bytesRec = handler.Receive(bytes);
-                data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
-                if (data.IndexOf("<EOF>") > -1)
+                try
                 {
-                    break;
+                    int bytesRec = handler.Receive(bytes);
+                    data += Encoding.ASCII.GetString(bytes, 0, bytesRec);
+                    if ((indexOfEOF = data.IndexOf("<EOF>")) > -1)
+                        break;
                 }
+                catch(System.ObjectDisposedException){ }
             }
 
             // Show the data on the console.
             Console.WriteLine("Text received : {0}", data);
-            return data;
+            return data.Substring(0, indexOfEOF);
+        }
+
+        public void send(byte[] data, int count)
+        {
+            try 
+            {
+                handler.Send(data, count, new SocketFlags());
+            } catch (SocketException e)
+            {
+                Console.WriteLine(e);
+                handler.Close();
+            }
+
         }
 
         public string getIpAdress()
@@ -104,6 +120,11 @@ namespace SoundPcStream_SPS_.Connection
         public int getPortValide()
         {
             return tcpConnInfoListe.First().LocalEndPoint.Port;
+        }
+
+        public bool isClose()
+        {
+            return !handler.Connected;
         }
 
         private bool isPortOpen(int numPort)
